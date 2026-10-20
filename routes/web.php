@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AttendanceController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -12,7 +13,6 @@ Route::get('/register', function () {
 Route::post('/register', [UserController::class, 'store']);
 Route::get('/login', function () {
     return view('user.user-login');
-});
-Route::get('/attendance', function () {
-    return view('user.attendance-register');
-});
+})->name('login');
+Route::get('/attendance', [AttendanceController::class, 'index'])
+    ->middleware('auth');
