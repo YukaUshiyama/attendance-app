@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
@@ -41,4 +42,30 @@ class AttendanceController extends Controller
             'attendanceStatus' => $attendanceStatus,
         ]);
     }
+    public function store(Request $request)
+    {
+        $user = Auth::user();
+        $now = now('Asia/Tokyo');
+
+        if ($request->input('action') === 'clock_in') {
+        // 出勤処理
+        $user->worktimes()->create([
+            'clock_in' => $now,
+        ]);
+
+        } elseif ($request->input('action') === 'clock_out') {
+        // 退勤処理
+        $todayWorktime = $user->worktimes()
+        ->whereNull('clock_out')
+        ->latest('clock_in')
+        ->first();
+        if ($todayWorktime) {
+            $todayWorktime->update([
+                'clock_out' => $now,
+            ]);
+        }
+    }
+
+    return redirect('/attendance');
+}
 }

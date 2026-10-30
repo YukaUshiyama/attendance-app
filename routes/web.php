@@ -16,3 +16,5 @@ Route::get('/login', function () {
 })->name('login');
 Route::get('/attendance', [AttendanceController::class, 'index'])
     ->middleware('auth');
+Route::post('/attendance', [AttendanceController::class, 'store'])
+    ->middleware('auth');

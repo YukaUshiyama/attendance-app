@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Worktime extends Model
 {
     use HasFactory;
+    protected $fillable = ['clock_in', 'clock_out'];
 public function user(): BelongsTo
 {
     return $this->belongsTo(User::class);
