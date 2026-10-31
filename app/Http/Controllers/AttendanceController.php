@@ -43,26 +43,68 @@ class AttendanceController extends Controller
         ]);
     }
     public function store(Request $request)
-    {
-        $user = Auth::user();
-        $now = now('Asia/Tokyo');
+{
+    $user = Auth::user();
+    $now = now('Asia/Tokyo');
 
-        if ($request->input('action') === 'clock_in') {
-        // 出勤処理
+    if ($request->input('action') === 'clock_in') {
+        // 出勤
         $user->worktimes()->create([
             'clock_in' => $now,
         ]);
 
-        } elseif ($request->input('action') === 'clock_out') {
-        // 退勤処理
+    } elseif ($request->input('action') === 'clock_out') {
+        // 退勤
         $todayWorktime = $user->worktimes()
-        ->whereNull('clock_out')
-        ->latest('clock_in')
-        ->first();
+            ->whereNull('clock_out')
+            ->latest('clock_in')
+            ->first();
+
         if ($todayWorktime) {
             $todayWorktime->update([
                 'clock_out' => $now,
             ]);
+        }
+
+    } elseif ($request->input('action') === 'break_in') {
+        // 休憩入
+        $todayWorktime = $user->worktimes()
+            ->whereNull('clock_out')
+            ->latest('clock_in')
+            ->first();
+
+        if ($todayWorktime) {
+            $activeBreak = $todayWorktime->breaktimes()
+                ->whereNotNull('break_in')
+                ->whereNull('break_out')
+                ->exists();
+
+            if (!$activeBreak) {
+                $todayWorktime->breaktimes()->create([
+                    'break_in' => $now,
+                ]);
+            }
+        }
+
+    } elseif ($request->input('action') === 'break_out') {
+        // 休憩戻
+        $todayWorktime = $user->worktimes()
+            ->whereNull('clock_out')
+            ->latest('clock_in')
+            ->first();
+
+        if ($todayWorktime) {
+            $todayBreaktime = $todayWorktime->breaktimes()
+                ->whereNotNull('break_in')
+                ->whereNull('break_out')
+                ->latest('break_in')
+                ->first();
+
+            if ($todayBreaktime) {
+                $todayBreaktime->update([
+                    'break_out' => $now,
+                ]);
+            }
         }
     }
 
